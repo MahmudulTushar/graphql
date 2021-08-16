@@ -1,0 +1,25 @@
+type User{
+  id: ID!
+  Name: String!
+}
+
+type Course{
+  id: ID!
+  name: String!
+  description: String!
+  user: User!
+}
+
+type Query{
+  courses: [Course!]!
+}
+
+input NewCourse {
+  name: String!
+  description: String!
+  userId: String!
+}
+
+type Mutation{
+  createNewCourse(input:NewCourse!): Course!
+}
