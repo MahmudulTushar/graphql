@@ -20,6 +20,13 @@ input NewCourse {
   userId: String!
 }
 
+input UpdateCourse{
+  name: String!
+  description: String!
+}
+
 type Mutation{
   createNewCourse(input:NewCourse!): Course!
+  updateCourse(id: ID!, input: UpdateCourse): String!
+  deleteCourse(id: ID!): String!
 }

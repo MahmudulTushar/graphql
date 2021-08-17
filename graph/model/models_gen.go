@@ -15,6 +15,11 @@ type NewCourse struct {
 	UserID      string `json:"userId"`
 }
 
+type UpdateCourse struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"Name"`

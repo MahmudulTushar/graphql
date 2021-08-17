@@ -18,6 +18,8 @@ const CourseCollection = "Course"
 type CourseRepository interface {
 	Save(course *model.Course)
 	FindAll() []*model.Course
+	UpdateById(id string, course *model.Course) string
+	Delete(id string) string
 }
 
 type database struct {
@@ -31,6 +33,43 @@ func (db *database) Save(course *model.Course) {
 		log.Fatal(err)
 	}
 
+}
+
+func (db *database) Delete(id string) string {
+	collection := db.client.Database(DatasBase).Collection(CourseCollection)
+	res, err := collection.DeleteOne(context.Background(), bson.M{"_id": id})
+	if err != nil {
+		log.Fatal(err)
+		return "Not Deleted"
+	}
+
+	if res.DeletedCount > 0 {
+		return "Deleted"
+	}
+
+	return "No record has been deleted"
+}
+
+func (db *database) UpdateById(id string, course *model.Course) string {
+	// Declare an _id filter to get a specific MongoDB document
+	filter := bson.M{"_id": bson.M{"$eq": id}}
+	// Declare a filter that will change a field's integer value to `42`
+	update := bson.M{"$set": bson.M{"name": course.Name, "description": course.Description}}
+	collection := db.client.Database(DatasBase).Collection(CourseCollection)
+	// Call the driver's UpdateOne() method and pass filter and update to it
+	res, err := collection.UpdateOne(
+		context.Background(),
+		filter,
+		update,
+	)
+	if err != nil {
+		log.Fatal(err)
+		return "Error while updating the record"
+	}
+	if res.ModifiedCount > 0 {
+		return "Record Update"
+	}
+	return "No record found"
 }
 
 func (db *database) FindAll() []*model.Course {

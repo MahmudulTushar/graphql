@@ -52,6 +52,8 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateNewCourse func(childComplexity int, input model.NewCourse) int
+		DeleteCourse    func(childComplexity int, id string) int
+		UpdateCourse    func(childComplexity int, id string, input *model.UpdateCourse) int
 	}
 
 	Query struct {
@@ -66,6 +68,8 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateNewCourse(ctx context.Context, input model.NewCourse) (*model.Course, error)
+	UpdateCourse(ctx context.Context, id string, input *model.UpdateCourse) (string, error)
+	DeleteCourse(ctx context.Context, id string) (string, error)
 }
 type QueryResolver interface {
 	Courses(ctx context.Context) ([]*model.Course, error)
@@ -125,6 +129,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateNewCourse(childComplexity, args["input"].(model.NewCourse)), true
+
+	case "Mutation.deleteCourse":
+		if e.complexity.Mutation.DeleteCourse == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteCourse_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteCourse(childComplexity, args["id"].(string)), true
+
+	case "Mutation.updateCourse":
+		if e.complexity.Mutation.UpdateCourse == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateCourse_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateCourse(childComplexity, args["id"].(string), args["input"].(*model.UpdateCourse)), true
 
 	case "Query.courses":
 		if e.complexity.Query.Courses == nil {
@@ -233,8 +261,15 @@ input NewCourse {
   userId: String!
 }
 
+input UpdateCourse{
+  name: String!
+  description: String!
+}
+
 type Mutation{
   createNewCourse(input:NewCourse!): Course!
+  updateCourse(id: ID!, input: UpdateCourse): String!
+  deleteCourse(id: ID!): String!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -255,6 +290,45 @@ func (ec *executionContext) field_Mutation_createNewCourse_args(ctx context.Cont
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteCourse_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateCourse_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *model.UpdateCourse
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalOUpdateCourse2ᚖgithubᚗcomᚋMahmudulTusharᚋgraphqlᚋgraphᚋmodelᚐUpdateCourse(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -491,6 +565,90 @@ func (ec *executionContext) _Mutation_createNewCourse(ctx context.Context, field
 	res := resTmp.(*model.Course)
 	fc.Result = res
 	return ec.marshalNCourse2ᚖgithubᚗcomᚋMahmudulTusharᚋgraphqlᚋgraphᚋmodelᚐCourse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateCourse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateCourse_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateCourse(rctx, args["id"].(string), args["input"].(*model.UpdateCourse))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteCourse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteCourse_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteCourse(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_courses(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1792,6 +1950,34 @@ func (ec *executionContext) unmarshalInputNewCourse(ctx context.Context, obj int
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateCourse(ctx context.Context, obj interface{}) (model.UpdateCourse, error) {
+	var it model.UpdateCourse
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1859,6 +2045,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "createNewCourse":
 			out.Values[i] = ec._Mutation_createNewCourse(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateCourse":
+			out.Values[i] = ec._Mutation_updateCourse(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteCourse":
+			out.Values[i] = ec._Mutation_deleteCourse(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2580,6 +2776,14 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) unmarshalOUpdateCourse2ᚖgithubᚗcomᚋMahmudulTusharᚋgraphqlᚋgraphᚋmodelᚐUpdateCourse(ctx context.Context, v interface{}) (*model.UpdateCourse, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputUpdateCourse(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
